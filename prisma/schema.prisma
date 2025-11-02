@@ -1,10 +1,28 @@
 
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+
+// Schema for User
+model User {
+  id String @id @default(cuid())   // directive and then cuid utill which auto generate unique id
+  clerkId String @unique     //  clerk is also generated unique id by itself
+  email String @unique
+  username String? @unique    // qusetion mark signifies optional
+
+  firstName String?
+  lastName String?
+  imageUrl String?
+
+  bio String? @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
