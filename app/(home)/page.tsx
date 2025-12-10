@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { onBoardUser } from "@/modules/auth/actions";
 import ClaimLinkForm from "@/modules/home/components/claim-link-form";
-// import { getCurrentUsername } from "@/modules/profile/actions";
+import { getCurrentUsername } from "@/modules/profile/actions";
 
 
 import Link from "next/link";
@@ -10,6 +10,9 @@ import { redirect } from "next/navigation";
 
 const HomePage = async () =>{
   const user = await onBoardUser();    // simply call it when user enter after auth to home page it will onboard either existing user or new user
+
+  const profile = await getCurrentUsername();
+  console.log(profile);
 
   // if user is not authenticated
   if (!user.success) {
@@ -41,12 +44,13 @@ const HomePage = async () =>{
           {/* CTA Button */}
           <div className="pt-4">
             {
-              // It will appear when user have claimed username so we will do it conditionally
-              <Link href="/admin/my-tree">
-                <Button size="lg" className="px-8 py-3 text-lg font-medium cursor-pointer">
-                  BioBranch Dashboard
-                </Button>
-              </Link>
+              user.success && profile?.username && (
+                <Link href="/admin/my-tree">
+                  <Button size="lg" className="px-8 py-3 text-lg font-medium cursor-pointer">
+                    BioBranch Dashboard
+                  </Button>
+                </Link>
+              )
             }
           </div>
         </section>
