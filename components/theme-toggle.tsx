@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react"    // lucide shadcn k sath install ho j
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 
+// This component can be used anywhere in any project
 export function ModeToggle() {
 
     const { theme, setTheme } = useTheme()

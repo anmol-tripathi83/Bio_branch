@@ -1,8 +1,57 @@
-import React from 'react'
+import { Button } from "@/components/ui/button";
+import { onBoardUser } from "@/modules/auth/actions";
+// import ClaimLinkForm from "@/modules/home/components/cliam-link-form";
+// import { getCurrentUsername } from "@/modules/profile/actions";
 
-export const HomePage = () => {
+
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+
+const HomePage = async () =>{
+  const user = await onBoardUser();    // simply call it when user enter after auth to home page it will onboard either existing user or new user
+
+  // if user is not authenticated
+  if (!user.success) {
+    return redirect("/sign-in");
+  } 
+
   return (
-    <div>HomePage</div>
+    <div className="min-h-screen ">
+      {/* Header */}
+
+      {/* Main Content */}
+      <main className="flex flex-col max-w-4xl mx-auto px-6">
+        <section className="text-center space-y-8 py-32">
+          {/* Hero Text */}
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight text-zinc-700 dark:text-zinc-100">
+              Everything you are.
+              <br />
+              <span className="text-[#41B313]">In one simple link.</span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              Join 70M+ people using TreeBio for their link in bio. One link to
+              help you share everything you create, curate and sell from your
+              social media profiles.
+            </p>
+          </div>
+
+          {/* CTA Button */}
+          <div className="pt-4">
+            {
+              // It will appear when user have claimed username so we will do it conditionally
+              <Link href="/admin/my-tree">
+                <Button size="lg" className="px-8 py-3 text-lg font-medium cursor-pointer">
+                  BioBranch Dashboard
+                </Button>
+              </Link>
+            }
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
 
