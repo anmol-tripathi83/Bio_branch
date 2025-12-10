@@ -5,6 +5,7 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";   // signedin and signout s
 
 import Link from "next/link";   // nextjs link component 
 import Image from "next/image";   // nextjs image component
+import { ModeToggle } from "@/components/theme-toggle";
 
 export const Navbar = () => {
   return (
@@ -21,7 +22,7 @@ export const Navbar = () => {
 
           {/* Light-dark toggle functionality*/}
           <div className="flex items-center gap-4">
-            {/* <ModeToggle /> */}
+            <ModeToggle />    {/* This componenet can be used anywhere in any project */}
             {/* when signed in then it shows */}
               <SignedIn>    {/** Higher order component */}
                 <UserButton showName />
