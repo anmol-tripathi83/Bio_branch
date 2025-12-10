@@ -4,6 +4,7 @@ import "./globals.css";
 
 import {ClerkProvider} from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 // act as a main.jsx in reactjs application -> entry level file 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <Toaster />
             {children}
           </ThemeProvider>
         </body>

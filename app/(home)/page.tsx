@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { onBoardUser } from "@/modules/auth/actions";
-// import ClaimLinkForm from "@/modules/home/components/cliam-link-form";
+import ClaimLinkForm from "@/modules/home/components/claim-link-form";
 // import { getCurrentUsername } from "@/modules/profile/actions";
 
 
@@ -32,7 +32,7 @@ const HomePage = async () =>{
             </h1>
 
             <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Join 70M+ people using TreeBio for their link in bio. One link to
+              Join 70M+ people using BioBranch for their link in bio. One link to
               help you share everything you create, curate and sell from your
               social media profiles.
             </p>
@@ -48,6 +48,13 @@ const HomePage = async () =>{
                 </Button>
               </Link>
             }
+          </div>
+        </section>
+
+        {/* Claim Link Section */}
+        <section className="pb-16 md:pb-24">
+          <div className="max-w-md mx-auto">
+            <ClaimLinkForm />
           </div>
         </section>
       </main>
