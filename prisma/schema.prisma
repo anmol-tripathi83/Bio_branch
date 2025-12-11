@@ -15,14 +15,32 @@ model User {
   id String @id @default(cuid())   // directive and then cuid utill which auto generate unique id
   clerkId String @unique     //  clerk is also generated unique id by itself
   email String @unique
-  username String? @unique    // qusetion mark signifies optional
+  username String? @unique    // qusetion mark signifies optional and unique
 
   firstName String?
   lastName String?
   imageUrl String?
 
-  bio String? @db.VarChar(500)
+  bio String? @db.VarChar(500)  // optional
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  links Link[]      // opposite relations
+}
+
+// User have one to many relationship with link i.e one user can create multiples links and when it got del then all link also got del automatically. 
+model Link {
+  id String  @id @default(cuid())
+  title String
+  url String
+  description String? @db.VarChar(500) // Optional description with a max length of 500 characters
+  clickCount Int @default(0)
+
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)   //cascade means byany chance user del then all its links by default deleted
 }
