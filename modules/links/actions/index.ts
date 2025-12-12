@@ -65,7 +65,7 @@ export const getAllLinkForUser = async()=>{
     }
 }
 
-
+// to preview at right sidebar of my-tree page
 export const getPreviewData = async()=>{
     const user = await currentUser();
 
