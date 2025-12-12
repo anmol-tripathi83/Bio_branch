@@ -42,7 +42,7 @@ export const claimUsername = async (username: string) => {
   return { success: true };
 }
 
-
+// returns the current logged in user
 export const getCurrentUsername = async ()=>{
     const user = await currentUser();
 
@@ -61,7 +61,7 @@ export const getCurrentUsername = async ()=>{
     return currentUsername;
 }
 
-
+// function to create the user profile by adding the info
 export const createUserProfile = async (data:ProfileFormData)=>{
     const user = await currentUser();
 
@@ -87,18 +87,16 @@ export const createUserProfile = async (data:ProfileFormData)=>{
     }
 }
 
-// export const getUserByUsername = async (username:string)=>{
+export const getUserByUsername = async (username:string)=>{
 
-//   const currentUsername = await db.user.findUnique({
-//     where:{
-//       username:username
-//     },
-//    include:{
-    
-//     links:true,
-//     socialLinks:true
-//    }
-   
-//   })
-//   return currentUsername;
-// }
+    const currentUsername = await db.user.findUnique({
+        where:{
+            username:username
+        },
+        include:{     // select means take the listed data only,   includes means related table data ko include kar le aao
+            links:true,
+            socialLinks:true
+        }
+    })
+    return currentUsername;
+}

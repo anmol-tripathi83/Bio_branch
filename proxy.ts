@@ -6,7 +6,8 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)', 
   '/sign-up(.*)',
-  '/([^/]+)' // This matches any single segment path like /username
+  
+  '/([^/]+)' // This matches any single segment path like /username    => kind of public url banana h koi aur bhi profile dekh ske evenif user is not logged in
 ])
 
 export default clerkMiddleware(async (auth, req) => {
