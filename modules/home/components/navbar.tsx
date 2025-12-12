@@ -15,7 +15,7 @@ export const Navbar = () => {
         <div className="px-6 py-4 flex justify-between items-center">
         {/* Logo will navigate to home page */}
           <Link href={"/"} className="flex items-center gap-2">
-            <Image src={"/logo.png"} alt="BioBranch" width={42} height={42} />
+            <Image src={"/logo.png"} alt="BioBranch" width={48} height={48} />
             <span className="font-bold text-2xl tracking-widest text-[#139c6f]">
               BioBranch
             </span>

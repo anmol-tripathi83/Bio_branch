@@ -128,7 +128,7 @@ const LinkForm = ({ username, bio, link}: Props) => {
     });
 
 
-    // Profile submit handler
+    // Profile submit handler when edit and resubmit in biobranch dashboard
     const onProfileSubmit = async (data: ProfileFormData) => {
         try {
             setProfile((prev) => ({ ...prev, ...data }));
@@ -172,7 +172,7 @@ const LinkForm = ({ username, bio, link}: Props) => {
         if (!editingLinkId) return;
         try {
             const res = await editLink(data, editingLinkId);
-            if (res?.sucess) {
+            if (res?.success) {
                 setLinks((prev) =>
                 prev.map((l) => (l.id === editingLinkId ? { ...l, ...data } : l))
                 );

@@ -65,24 +65,22 @@ export const createUserProfile = async (data:ProfileFormData)=>{
     if (!user) return { success: false, error: "No authenticated user found" };
 
     const profile = await db.user.update({
-    where:{
-        clerkId:user.id
-    },
-    data:{
-        firstName:data.firstName,
-        lastName:data.lastName,
-        bio:data.bio,
-        imageUrl:data.imageUrl,
-        username:data.username,
-
-
-    }
+        where:{
+            clerkId:user.id
+        },
+        data:{
+            firstName:data.firstName,
+            lastName:data.lastName,
+            bio:data.bio,
+            imageUrl:data.imageUrl,
+            username:data.username,
+        }
     })
 
     return {
-    sucess:true,
-    message:"Profile created successfully",
-    data:profile
+        sucess:true,
+        message:"Profile created successfully",
+        data:profile
     }
 }
 

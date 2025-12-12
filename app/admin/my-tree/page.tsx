@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Brush, Share } from "lucide-react";
 import LinkForm from "@/modules/links/components/link-form";
 import { getCurrentUsername } from "@/modules/profile/actions";
+import { getAllLinkForUser, getPreviewData } from "@/modules/links/actions";
 
 const Page = async () => {
   const profile = await getCurrentUsername();
+  const links = await getAllLinkForUser();   // Get all the user's links
 
   return (
     <section className="flex flex-col gap-6 px-4 py-6 ">
@@ -36,6 +38,8 @@ const Page = async () => {
             <LinkForm
               username={profile?.username!}
               bio={profile?.bio!}
+              // @ts-ignore
+              link={links.data!}
             />
           </div>
           {/* <div className="order-1 lg:order-2 lg:sticky lg:top-6">

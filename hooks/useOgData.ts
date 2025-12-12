@@ -44,7 +44,7 @@ export function useOGData(url: string | null): UseOGDataResult {
 
     const fetchOGData = async () => {
       try {
-        const response = await fetch(`/api/og-data?url=${encodeURIComponent(url)}`);
+        const response = await fetch(`/api/og-data?url=${encodeURIComponent(url)}`);   // this calls the route which we have build on api/ogh-data/route.ts
         
         if (!response.ok) {
           const errorData = await response.json();

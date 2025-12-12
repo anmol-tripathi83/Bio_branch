@@ -23,6 +23,8 @@ interface LinkCardProps {
 }
 
 export const LinkCard: React.FC<LinkCardProps> = ({link,onEdit, onDelete}) => {
+
+  // this hook triggers when link.url changes in the input to find next data(for bio)
   const { data: ogData, loading, error } = useOGData(link.url);   // uses hook which internaly call backend route and backend collect data and came here and we use that data below
 
   return (

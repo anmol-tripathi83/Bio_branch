@@ -62,7 +62,7 @@ const ClaimLinkForm = () => {
                 if(result.success){
                     toast.success("Link claimed successfully!");
                     setLinkValue("");
-                    router.push(`/admin/myTree`)
+                    router.push(`/admin/my-tree`)
                 }
             }
         } catch (error) {
