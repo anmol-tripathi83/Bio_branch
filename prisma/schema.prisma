@@ -1,61 +1,96 @@
 
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"      // ctrl + spacebar -> will show suggestion 
-  url      = env("DATABASE_URL")
+    provider = "postgresql"      // ctrl + spacebar -> will show suggestion 
+    url      = env("DATABASE_URL")
 }
 
 
 // Schema for User
 model User {
-  id String @id @default(cuid())   // directive and then cuid utill which auto generate unique id
-  clerkId String @unique     //  clerk is also generated unique id by itself
-  email String @unique
-  username String? @unique    // qusetion mark signifies optional and unique
+    id String @id @default(cuid())   // directive and then cuid utill which auto generate unique id
+    clerkId String @unique     //  clerk is also generated unique id by itself
+    email String @unique
+    username String? @unique    // qusetion mark signifies optional and unique
 
-  firstName String?
-  lastName String?
-  imageUrl String?
+    firstName String?
+    lastName String?
+    imageUrl String?
 
-  bio String? @db.VarChar(500)  // optional
+    bio String? @db.VarChar(500)  // optional
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  links Link[]      // opposite relations 
-  socialLinks  SocialLink[]   // opposite relation for socialLink
+    links Link[]      // opposite relations 
+    socialLinks  SocialLink[]   // opposite relation for socialLink
+    profileViews ProfileAnalytics[]
 }
 
 // User have one to many relationship with link i.e one user can create multiples links and when it got del then all link also got del automatically. 
 model Link {
-  id String  @id @default(cuid())
-  title String
-  url String
-  description String? @db.VarChar(500) // Optional description with a max length of 500 characters
-  clickCount Int @default(0)
+    id String  @id @default(cuid())
+    title String
+    url String
+    description String? @db.VarChar(500) // Optional description with a max length of 500 characters
+    clickCount Int @default(0)
 
-  userId String
+    userId String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)   //cascade means byany chance user del then all its links by default deleted
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)   //cascade means byany chance user del then all its links by default deleted
+
+    analytics LinkAnalytics[]   // opposite relation
 }
 
 
 // social media link, this also have relationship to user(one to many)
 model SocialLink {
-  id       String @id @default(cuid())
-  platform String
-  url      String
-  userId   String
+    id       String @id @default(cuid())
+    platform String
+    url      String
+    userId   String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+// Analytics to help to track the count of clicking links
+model LinkAnalytics {
+    id        String   @id @default(cuid())
+    linkId    String
+    clickedAt DateTime
+    clickerIp String   @db.VarChar(45)    // clicker IP address
+
+    link      Link     @relation(fields: [linkId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([linkId, clickerIp, clickedAt])    // ek hi Ip se multiples time click ek hi click mani jayegi
+    @@index([clickedAt, linkId])       // helps to fetch fast
+}
+
+// Analytics to help to track the count of visiting peoples to profile
+model ProfileAnalytics {
+  id        String   @id @default(cuid())
+  userId    String
+  
+  visitedAt DateTime @default(now())
+  visitorIp String   @db.VarChar(45)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([visitedAt, userId])
 }

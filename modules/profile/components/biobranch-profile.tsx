@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Instagram, Youtube, Twitter, Github, Linkedin, Globe, ExternalLink, Share, Star, Sun, Moon, ArrowLeft, Copy, CopyCheck} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-// import { logLinkClick } from "@/modules/analytics/actions";
+import { logLinkClick } from "@/modules/analytics/actions";
 
 
 interface LinkItem {
@@ -97,7 +97,7 @@ const BioBranchProfile = ({ profileData }: BioBranchProfileProps) =>{
     // It handles how many times link has been clicked
     const handleLinkClick = async (linkId: string) => {
         try {
-            // await logLinkClick(linkId);
+            await logLinkClick(linkId);   // maintain the link click log
 
             setLinkClicks(prev => ({
                 ...prev,
@@ -105,7 +105,7 @@ const BioBranchProfile = ({ profileData }: BioBranchProfileProps) =>{
             }));
 
             console.log(`Logged click for link: ${linkId}`);
-            } catch (error) {
+        } catch (error) {
             console.error("Failed to log link click:", error);
         }
     };
@@ -251,7 +251,7 @@ const BioBranchProfile = ({ profileData }: BioBranchProfileProps) =>{
                 <Button
                     key={link.id}
                     asChild
-                    onClick={(event) => handleLinkClick(link.id, link.url, event)}
+                    onClick={(event) => handleLinkClick(link.id)}
                     variant="outline"
                     className={`w-full h-14 text-base font-medium backdrop-blur-sm transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] group ${theme === "dark"
                     ? "border-zinc-600/40 bg-zinc-700/40 text-zinc-100 hover:bg-zinc-600/60 hover:border-zinc-500/60"

@@ -1,6 +1,6 @@
 import { getUserByUsername } from '@/modules/profile/actions';
-// import { logProfileVist } from '@/modules/analytics/actions';
 import BioBranchProfile from '@/modules/profile/components/biobranch-profile';
+import { logProfileVist } from '@/modules/analytics/actions';
 
 import { redirect } from 'next/navigation';
 import React from 'react'
@@ -14,9 +14,9 @@ const Page = async ({ params }: { params: Promise<{ username: string }> }) => {
         return redirect("/");    // utility which helps to redirect to anywhere in server
     }
 
-    // logProfileVist(profileData.id).catch((err) => {
-    //     console.error("Error logging profile visit:", err);
-    // });
+    logProfileVist(profileData.id).catch((err) => {
+        console.error("Error logging profile visit:", err);
+    });
 
     return (
         // @ts-ignore
