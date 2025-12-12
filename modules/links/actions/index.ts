@@ -3,7 +3,10 @@
 import { db } from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { LinkFormData } from "../components/link-form";
+import { SocialLinkFormData } from "../components/social-link-modal";
 
+
+// LINK RELETED ACTIONS -
 
 // server action to create the link 
 export const createLinkByUser = async(data:LinkFormData)=>{
@@ -28,7 +31,7 @@ export const createLinkByUser = async(data:LinkFormData)=>{
     });
 
     return {
-        sucess:true,
+        success:true,
         message:"Link created successfully",
         data:link
     }
@@ -61,6 +64,7 @@ export const getAllLinkForUser = async()=>{
         data:links
     }
 }
+
 
 export const getPreviewData = async()=>{
     const user = await currentUser();
@@ -101,21 +105,73 @@ export const getPreviewData = async()=>{
     }
 }
 
+// Axction to delete the existing link
 export const deleteLink = async(linkId:string)=>{
     const user = await currentUser();
 
     if (!user) return { success: false, error: "No authenticated user found" };
 
     await db.link.delete({where:{id:linkId}});
-    return {sucess:true, message:"Link deleted successfully!"}
+    return {success:true, message:"Link deleted successfully!"}
 }
 
+// Action to edit the existing link and update it
 export const editLink = async(data:LinkFormData,linkId:string)=>{
     const user = await currentUser();
 
     if (!user) return { success: false, error: "No authenticated user found" };
 
     await db.link.update({where:{id:linkId , user:{clerkId:user.id}},data:data});
-    return {sucess:true, message:"Link updated successfully!"}
+    return {success:true, message:"Link updated successfully!"}
 }
+
+
+
+// # SOCIAL LINK RELATED ACTIONS -
+
+// Action to create social link
+export const addSocialLink = async(data:SocialLinkFormData)=>{
+    const user = await currentUser();
+
+    if (!user) return { success: false, error: "No authenticated user found" };
+
+    const socialLink = await db.socialLink.create({
+        data:{
+            platform: data.platform,
+            url: data.url,
+            user: {
+                connect: {
+                    clerkId: user.id
+                }
+            }
+        }
+    })
+
+    return {
+        success:true,
+        message:"Social link added successfully",
+        data:socialLink
+    }
+}
+
+// Action to edit the existing social link and update it
+export const editSocialLink = async(data:SocialLinkFormData,socialLinkId:string)=>{
+    const user = await currentUser();
+
+    if (!user) return { success: false, error: "No authenticated user found" };
+
+    await db.socialLink.update({where:{id:socialLinkId , user:{clerkId:user.id}},data:data});
+    return {success:true, message:"Social link updated successfully!"}
+}
+
+// Action to Delete the existing social links
+export const deleteSocialLink = async(socialLinkId:string)=>{
+    const user = await currentUser();
+
+    if (!user) return { success: false, error: "No authenticated user found" };
+
+    await db.socialLink.delete({where:{id:socialLinkId}});
+    return {success:true, message:"Social link deleted successfully!"}
+}
+
 

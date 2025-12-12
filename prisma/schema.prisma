@@ -26,7 +26,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  links Link[]      // opposite relations
+  links Link[]      // opposite relations 
+  socialLinks  SocialLink[]   // opposite relation for socialLink
 }
 
 // User have one to many relationship with link i.e one user can create multiples links and when it got del then all link also got del automatically. 
@@ -43,4 +44,18 @@ model Link {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)   //cascade means byany chance user del then all its links by default deleted
+}
+
+
+// social media link, this also have relationship to user(one to many)
+model SocialLink {
+  id       String @id @default(cuid())
+  platform String
+  url      String
+  userId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

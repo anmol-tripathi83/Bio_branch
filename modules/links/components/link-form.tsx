@@ -15,8 +15,9 @@ import { Plus, Instagram, Youtube, Mail, Archive, FolderPlus, Camera, Edit3, X }
 
 import { useUser } from "@clerk/nextjs";  //in client component, useUser hook provided by cleark whereas currentUser() function to get details for current user in server component
 import { LinkCard, LinkFormWithPreview } from "./link-card";
-import { createLinkByUser, deleteLink, editLink } from "../actions";
+import { addSocialLink, createLinkByUser, deleteLink, deleteSocialLink, editLink, editSocialLink } from "../actions";
 import { createUserProfile } from "@/modules/profile/actions";
+import { SocialLinkModal } from "./social-link-modal";
 
 
 // linkschema using zod
@@ -54,8 +55,15 @@ const profileSchema = z.object({
     imageUrl: z.string().url("Please enter a valid image URL").optional(),
 });
 
+// Social link schemas
+const socialLinkSchema = z.object({
+    platform: z.enum(["instagram", "youtube", "email"]),
+    url: z.url().min(1, "url is required"),
+});
+
 export type ProfileFormData = z.infer<typeof profileSchema>;
 export type LinkFormData = z.infer<typeof linkSchema>;
+export type socialLinksData = z.infer<typeof socialLinkSchema>
 
 
 interface Link {
@@ -75,6 +83,12 @@ interface Profile {
   imageUrl?: string;
 }
 
+interface SocialLink {
+  id: string;
+  platform: "instagram" | "youtube" | "email";
+  url: string;
+}
+
 interface Props {
     username: string;
     bio: string;
@@ -86,15 +100,21 @@ interface Props {
         clickCount: number;
         createdAt: Date;
     }[];
+    socialLinks?: SocialLink[]; // Add social links prop
 }
 
-const LinkForm = ({ username, bio, link}: Props) => {
+const LinkForm = ({ username, bio, link, socialLinks: initialSocialLinks = []}: Props) => {
     const currentUser = useUser();   // get from cleark
     
     const [editingProfile, setEditingProfile] = React.useState(false);  // state to edit the profile
+    // Link related states
     const [isAddingLink, setIsAddingLink] = React.useState(false);   // state to manage adding of link
     const [links, setLinks] = React.useState<Link[]>(link || []);    
     const [editingLinkId, setEditingLinkId] = React.useState<string | null>(null);  
+    // socialLink related states
+    const [userSocialLinks, setUserSocialLinks] = React.useState<SocialLink[]>(initialSocialLinks);
+    const [isSocialModalOpen, setIsSocialModalOpen] = React.useState(false);
+    const [editingSocialLink, setEditingSocialLink] = React.useState<SocialLink | null>(null);
     
     const [profile, setProfile] = React.useState<Profile>({    // Its type Profile is shown above
         firstName: currentUser.user?.firstName || "",
@@ -105,6 +125,7 @@ const LinkForm = ({ username, bio, link}: Props) => {
         currentUser.user?.imageUrl ||
         `https://avatar.iran.liara.run/username?username=[${currentUser.user?.firstName}+${currentUser.user?.lastName}]`,
     });
+
 
     // Profile form schemas
     const profileForm = useForm<ProfileFormData>({
@@ -209,122 +230,239 @@ const LinkForm = ({ username, bio, link}: Props) => {
         setIsAddingLink(true);
     };
 
+    // when social link adding button clicked
+    const onSocialLinkSubmit = async (data: socialLinksData) => {
+        try {
+            if (editingSocialLink) {   // if we are in editing mode
+                const result = await editSocialLink(data, editingSocialLink.id);
+                if (result?.success) {
+                setUserSocialLinks((prev) =>
+                    prev.map((link) =>
+                    link.id === editingSocialLink.id
+                        ? { ...link, platform: data.platform, url: data.url }
+                        : link
+                    )
+                );
+                toast.success(`${data.platform} link updated successfully!`);
+                } else {
+                toast.error(result?.error || "Failed to update social link.");
+            }
+            } else {   // when we are not in editing mode
+                // Add new social link
+                const result = await addSocialLink(data);
+                if (result?.success && result?.data) {
+                    const newSocialLink: SocialLink = {
+                        id: result.data.id,
+                        platform: data.platform,
+                        url: data.url,
+                    };
+                    setUserSocialLinks((prev) => [...prev, newSocialLink]);
+                    toast.success(`${data.platform} link added successfully!`);
+                } else {
+                    toast.error(result?.error || "Failed to add social link.");
+                }
+            }
+        } catch (error) {
+            console.error("Error saving social link:", error);
+            toast.error("Failed to save social link.");
+        } finally {
+            setEditingSocialLink(null);
+        }
+    };
+
+    const getSocialIcon = (platform: string) => {
+        switch (platform) {
+            case "instagram":
+                return Instagram;
+            case "youtube":
+                return Youtube;
+            case "email":
+                return Mail;
+            default:
+                return Mail;
+        }
+    };
+
+    const handleDeleteSocialLink = async (socialLinkId: string) => {
+        try {
+            const result = await deleteSocialLink(socialLinkId);
+            if (result?.success) {
+                setUserSocialLinks((prev) => prev.filter((link) => link.id !== socialLinkId));
+                toast.success("Social link removed successfully!");
+            } else {
+                toast.error(result?.error || "Failed to delete social link.");
+            }
+        } catch (error) {
+            console.error("Error deleting social link:", error);
+            toast.error("Failed to delete social link.");
+        }
+    };
+
+    // Social link handlers
+    const handleAddSocialLink = () => {
+        setEditingSocialLink(null);
+        setIsSocialModalOpen(true);
+    };
+
+
     return (
         <div className="w-full max-w-2xl mx-auto space-y-6">
             {/* Profile Section */}
             <Card className="border-2 border-dashed border-gray-200 hover:border-green-400 transition-colors">
                 <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                    <div className="relative group">
-                        <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                            <AvatarImage
-                            src={profile.imageUrl || "/placeholder.svg"}
-                            alt={profile.username}
-                            />
-                            <AvatarFallback className="text-lg font-semibold bg-gray-100 text-gray-600">
-                            {profile.username.slice(0, 2).toUpperCase() || "UN"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <Button
-                            size="sm"
-                            variant="secondary"
-                            className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <Camera size={14} />
-                        </Button>
+                    <div className="flex items-center gap-4">
+                        <div className="relative group">
+                            <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+                                <AvatarImage
+                                src={profile.imageUrl || "/placeholder.svg"}
+                                alt={profile.username}
+                                />
+                                <AvatarFallback className="text-lg font-semibold bg-gray-100 text-gray-600">
+                                {profile.username.slice(0, 2).toUpperCase() || "UN"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <Camera size={14} />
+                            </Button>
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                            {editingProfile ? (
+                                <form
+                                    onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                                    className="space-y-2"
+                                >
+                                    <div className="flex gap-2">
+                                        {/** FirstName */}
+                                        <Input
+                                            {...profileForm.register("firstName")}
+                                            placeholder="First Name"
+                                        />
+                                        {/** LastName */}
+                                        <Input
+                                            {...profileForm.register("lastName")}
+                                            placeholder="Last Name"
+                                        />
+                                    </div>
+                                    {/** Username */}
+                                    <div>
+                                        <Input
+                                            {...profileForm.register("username")}
+                                            placeholder="Username"
+                                            className="font-semibold cursor-not-allowed"
+                                            readOnly
+                                            disabled
+                                        />
+                                        {profileForm.formState.errors.username && (
+                                            <p className="text-sm text-red-500 mt-1">
+                                                {profileForm.formState.errors.username.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                    {/** Text Area to write the bio */}
+                                    <div>
+                                        <Textarea
+                                        {...profileForm.register("bio")}
+                                            placeholder="Add bio..."
+                                            className="resize-none"
+                                            rows={2}
+                                        />
+                                        {profileForm.formState.errors.bio && (
+                                        <p className="text-sm text-red-500 mt-1">
+                                            {profileForm.formState.errors.bio.message}
+                                        </p>
+                                        )}
+                                    </div>
+                                    {/** Save and cancel button */}
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            type="submit"
+                                            disabled={profileForm.formState.isSubmitting}
+                                        >
+                                            Save
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            type="button"
+                                            onClick={() => setEditingProfile(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </form>
+                            ) : (
+                                // Edit button and bio
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-lg">
+                                    {   profile.username || "Add username..."}   {/** if username exist then username otherwise add username */}
+                                    </h3>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => setEditingProfile(true)}
+                                    >
+                                        <Edit3 size={12} />
+                                    </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {profile.bio || "Add bio..."}   {/**if bio exist then bio appear otherwise "add bio" */}
+                                </p>
+                            </div>
+                            )} 
+                        </div>
                     </div>
 
-                    <div className="flex-1 space-y-2">
-                        {editingProfile ? (
-                            <form
-                                onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                                className="space-y-2"
-                            >
-                                <div className="flex gap-2">
-                                    {/** FirstName */}
-                                    <Input
-                                        {...profileForm.register("firstName")}
-                                        placeholder="First Name"
-                                    />
-                                    {/** LastName */}
-                                    <Input
-                                        {...profileForm.register("lastName")}
-                                        placeholder="Last Name"
-                                    />
-                                </div>
-                                {/** Username */}
-                                <div>
-                                    <Input
-                                        {...profileForm.register("username")}
-                                        placeholder="Username"
-                                        className="font-semibold cursor-not-allowed"
-                                        readOnly
-                                        disabled
-                                    />
-                                    {profileForm.formState.errors.username && (
-                                        <p className="text-sm text-red-500 mt-1">
-                                            {profileForm.formState.errors.username.message}
-                                        </p>
-                                    )}
-                                </div>
-                                {/** Text Area to write the bio */}
-                                <div>
-                                    <Textarea
-                                    {...profileForm.register("bio")}
-                                        placeholder="Add bio..."
-                                        className="resize-none"
-                                        rows={2}
-                                    />
-                                    {profileForm.formState.errors.bio && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {profileForm.formState.errors.bio.message}
-                                    </p>
-                                    )}
-                                </div>
-                                {/** Save and cancel button */}
-                                <div className="flex gap-2">
+                    {/* Social Links */}
+                    <div className="mt-4 flex gap-2 flex-wrap">
+                        {/* Display existing social links */}
+                        {userSocialLinks.map((socialLink) => {
+                            const Icon = getSocialIcon(socialLink.platform);
+                            return (
+                                <div key={socialLink.id} className="relative group">
                                     <Button
-                                        size="sm"
-                                        type="submit"
-                                        disabled={profileForm.formState.isSubmitting}
-                                    >
-                                        Save
-                                    </Button>
-                                    <Button
-                                        size="sm"
                                         variant="outline"
-                                        type="button"
-                                        onClick={() => setEditingProfile(false)}
+                                        size="sm"
+                                        className="h-9 w-9 p-0 bg-transparent"
+                                        onClick={() => window.open(socialLink.url, '_blank')}
                                     >
-                                        Cancel
+                                        <Icon size={16} />
                                     </Button>
+                                    {/* Delete button on hover */}
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => handleDeleteSocialLink(socialLink.id)}
+                                    >
+                                        <X size={10} />
+                                    </Button>
+                                {/* Edit on click (optional - you can add this functionality) */}
                                 </div>
-                            </form>
-                        ) : (
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-lg">
-                                {   profile.username || "Add username..."}   {/** if username exist then username otherwise add username */}
-                                </h3>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0"
-                                    onClick={() => setEditingProfile(true)}
-                                >
-                                    <Edit3 size={12} />
-                                </Button>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {profile.bio || "Add bio..."}   {/**if bio exist then bio appear otherwise "add bio" */}
-                            </p>
+                            );
+                        })}
+
+                        {/* Add new social link button */}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 w-9 p-0 border-dashed bg-transparent"
+                            onClick={handleAddSocialLink}
+                        >
+                            <Plus size={16} />
+                        </Button>
                         </div>
-                        )} 
-                    </div>
-                </div>
                 </CardContent>
             </Card>
 
+            {/* Links Section */}
             <div className="space-y-3">
                 {
                     links.map((link) => (
@@ -367,6 +505,17 @@ const LinkForm = ({ username, bio, link}: Props) => {
                         )
                 }
             </div>
+
+            {/* Social Link Modal : Open when plus sign clicked to add the social link */} 
+            <SocialLinkModal
+                isOpen={isSocialModalOpen}
+                onClose={() => setIsSocialModalOpen(false)}
+                onSubmit={onSocialLinkSubmit}
+                defaultValues={editingSocialLink ? {
+                platform: editingSocialLink.platform,
+                url: editingSocialLink.url
+                } : undefined}
+            />
         </div>
     );
 };
