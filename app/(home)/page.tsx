@@ -7,6 +7,7 @@ import { getCurrentUsername } from "@/modules/profile/actions";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
 
 const HomePage = async () =>{
   const user = await onBoardUser();    // simply call it when user enter after auth to home page it will onboard either existing user or new user

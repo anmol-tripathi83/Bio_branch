@@ -3,6 +3,8 @@ import { SettingsForm } from "@/modules/settings/components/settings-form";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");

@@ -1,4 +1,3 @@
-import { db } from '@/lib/db';
 import { AnalyticsWrapper } from '@/modules/analytics/components/analytics-wrapper';
 import { OverviewCards } from '@/modules/analytics/components/overview-card';
 import { RecentActivity } from '@/modules/analytics/components/recent-activity';
@@ -6,9 +5,12 @@ import { TopLinksTable } from '@/modules/analytics/components/top-links-table';
 import { currentUser } from '@clerk/nextjs/server'
 import React from 'react'
 
+export const dynamic = "force-dynamic";
+
 const OverviewPage = async() => {
     const user = await currentUser();
 
+    const { db } = await import('@/lib/db');
     const id = await db.user.findUnique({
       where: { clerkId: user?.id },
       select: { id: true }

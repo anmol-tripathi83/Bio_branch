@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { QrCodeClient } from "./qr-code-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function QrCodePage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");

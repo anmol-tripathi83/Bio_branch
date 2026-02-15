@@ -1,12 +1,14 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ShortenerClient } from "./shortener-client";
-import { getShortLinksForUser } from "@/modules/shortener/actions";
+
+export const dynamic = "force-dynamic";
 
 export default async function ShortenerPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");
 
+  const { getShortLinksForUser } = await import("@/modules/shortener/actions");
   const result = await getShortLinksForUser();
   const links = result.success && result.data ? result.data : [];
 

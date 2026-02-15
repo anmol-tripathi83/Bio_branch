@@ -5,6 +5,8 @@ import { logProfileVist } from '@/modules/analytics/actions';
 import { redirect } from 'next/navigation';
 import React from 'react'
 
+export const dynamic = "force-dynamic";
+
 const Page = async ({ params }: { params: Promise<{ username: string }> }) => {
     const { username } = await params;    // get the username from the params from the url
     const profileData = await getUserByUsername(username);

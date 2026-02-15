@@ -6,6 +6,8 @@ import { getAllLinkForUser, getPreviewData } from "@/modules/links/actions";
 import PreviewFrame from "@/modules/links/components/preview-frame";
 import ShareMenu from "@/modules/links/components/share-menu";
 
+export const dynamic = "force-dynamic";
+
 const Page = async () => {
   const profile = await getCurrentUsername();
   const links = await getAllLinkForUser();   // Get all the user's links
