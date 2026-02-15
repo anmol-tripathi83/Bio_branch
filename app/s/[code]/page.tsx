@@ -1,6 +1,8 @@
 import { getLongUrlByCode } from "@/modules/shortener/actions";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ code: string }>;
 }
